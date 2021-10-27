@@ -2,19 +2,56 @@
 
 - hosts: all
   become: true
+  pre_tasks:
+
+  - name: install updates 
+    package:
+      name:
+        - apache2
+        - libapache2-mod-php
+      state: latest
+      update_cache: yes
+
+- hosts: web_servers
+  become: true
+  tasks:
+  
+  - name: install apache and php for webservers
+    tags: apache2,php
+    package:
+      name:
+        - apache2
+        - libapache2-mod-php
+      state: latest
+      update_cache: yes
+  - name: Copy the html file
+    tags: php
+    copy:
+      src: files/deafult_site.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: 0644
+
+- hosts: db_servers
+  become: true
   tasks:
 
-  - name: update repository service
+  - name: install mariadb-server package
+    tags: mariaserver
     apt:
-      update_cache: yes
-    when: ansible_distribution in ["Ubuntu"]
-  - name: install apache2 package
-    apt:
-     name: apache2
-     state: latest
-    when: ansible_distribution in ["Ubuntu"]
-  - name: add php support apache
-    apt:
-      name: libapache2-mod-php
+      name: 
+        mariadb-server
       state: latest
-    when: ansible_distribution == "Ubuntu"
+
+
+- hosts: file_servers
+  become: true
+  tasks:
+
+    - name: install mariadb
+      tags: mariaclient,ubunto
+      apt:
+        name: 
+          mariadb-client
+        state: latest
