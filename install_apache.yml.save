@@ -1,0 +1,58 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: install updates 
+    package:
+      name:
+        - apache2
+        - libapache2-mod-php
+      state: latest
+      update_cache: yes
+
+- hosts: web_servers
+  become: true
+  tasks:
+  
+  - name: install apache and php for webservers
+    tags: apache2,php
+    package:
+      name:
+        - apache2
+        - libapache2-mod-php
+      state: latest
+      update_cache: yes
+  - name: Copy the html file
+    tags: php
+    copy:
+      src: files/deafult_site.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: 0644
+
+- hosts: db_servers
+  become: true
+  tasks:
+
+  - name: install mariadb-server package
+    tags: mariaserver
+    apt:
+      name: 
+        mariadb-server
+      state: latest
+
+
+- hosts: file_servers
+  become: true
+  tasks:
+
+    - name: install mariadb
+      tags: mariaclient,ubunto
+      apt:
+        name: 
+          mariadb-client
+        state: latest
+- hosts: 
